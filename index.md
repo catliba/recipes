@@ -155,61 +155,16 @@ We will go over these in the next step.
 
 ## 7  Final Model
 
-We introduced an additional feature:  
+We added the columns `["protein_per_100kcal", "sugar_per_100kcal"]` which should provide us with a better gauge of healthiness and not healthy since regulating these two play a big role in determining whether or not a food is healthly. This time, I will be using a Gradient Boosting Classifier model. In the past, I have used this model with great success. For the hyperparameter search, I used GridSearch. I only did 2 fold because my computer takes too long to run anything higher.
 
-- **Preparation Time (`minutes`)**
+| Hyperparameter | Grid values | Best value |
+|----------------|-------------|------------|
+| `n_estimators` | 100, 200, 400 | 400 |
+| `learning_rate` | 0.05, 0.10, 0.20 | 0.05 |
+| `max_depth` | 2, 3, 5 | 5 |
+| `subsample` | 0.7, 1.0 | 0.7 |
 
-**Why it's beneficial:**  
-Recipe preparation time intuitively relates to healthiness; shorter recipes (often simpler or less processed) might be healthier, or conversely, longer preparation times could reflect more carefully curated, nutritious meals. This feature captures practical behavioral insights, providing context beyond nutritional content alone and helping the model leverage real-world cooking patterns and habits that influence perceived healthiness.
-
----
-
-## Modeling Algorithm and Hyperparameter Tuning
-
-We selected a **Random Forest Classifier** due to its:
-
-- Robustness to non-linear relationships.
-- Low susceptibility to overfitting through ensemble averaging.
-- Good performance in practical binary classification tasks with diverse numeric features.
-
-**Hyperparameters tuned and optimal values:**
-- **Number of estimators (`n_estimators`):** 200
-- **Maximum depth (`max_depth`):** 15
-- **Minimum samples per split (`min_samples_split`):** 10
-
-**Hyperparameter tuning method:**
-- **Grid Search with 5-fold Cross-validation:**  
-  This method exhaustively evaluated performance across a grid of hyperparameter combinations, providing balanced, reliable estimates of generalization performance to identify the best hyperparameters.
-
----
-
-## Final vs. Baseline Model Performance
-
-| Model            | Accuracy |
-|------------------|----------|
-| Baseline Model   | 81%      |
-| **Final Model**  | **84%**  |
-
-**Improvement:**  
-- The final model's accuracy improved by about **3 percentage points** compared to the baseline, a meaningful increase for practical purposes.
-
-**Reason for improvement:**  
-- Adding `minutes` captures additional explanatory power related to preparation behavior and cooking complexity.
-- Optimized hyperparameters reduced overfitting and improved generalization.
-
----
-
-## Optional Visualization: Confusion Matrix
-
-Below is a confusion matrix visualization for the final model:
-
-```plaintext
-               Predicted
-             | Healthy | Not Healthy |
--------------|---------|-------------|
-Actual Healthy| 920     | 180         |
-Actual Not Healthy| 140 | 760         |
-
+We are using ROC AUC because ROC "measures the ability of the model to rank predictions correctly across different thresholds" which is more suited for my dataset and features. I got a ROC AUC of 0.751 which is better than my baseline model which is a great improvement.
 
 ---
 
@@ -227,45 +182,16 @@ We evaluated the accuracy of our classifier separately within these two groups t
 ---
 
 ## Hypotheses
-
-- **Null Hypothesis (H₀):**  
-  The model's accuracy is the same for quick and not-quick recipes.
-
-- **Alternative Hypothesis (H₁):**  
-  The model's accuracy differs between quick and not-quick recipes.
-
----
-
-## Test Statistic and Significance Level
-
-**Test Statistic:**
-\[
-\Delta = \text{Accuracy(Quick)} - \text{Accuracy(Not-Quick)}
-\]
-
-**Significance Level:**  
-We chose α = **0.05** (standard significance level), indicating a 5% acceptable risk of incorrectly rejecting the null hypothesis.
-
----
-
-## Permutation Test Results
-
-- **Observed Δ (Accuracy Quick − Accuracy Not-Quick):** Approximately **+0.03** (3 percentage points).
-- **Permutation-based p-value:** **p ≈ 0.10** (from 10,000 permutations).
-
----
-
-## Conclusion
-
-Since our observed p-value (**0.10**) is greater than our chosen significance level (**0.05**), **we fail to reject the null hypothesis**.
-
-We conclude there is **no statistically significant evidence** that our model’s accuracy differs meaningfully between quick and not-quick recipes. The observed difference (around 3%) could be due to random variation.
-
----
-
----
-
-## References
-* Food.com Recipes and Interactions Dataset  
-* Scikit‑learn documentation  
-* A Few Citing Papers / Blogs
+| Item | Specification |
+|------|---------------|
+| **Group X** | **Quick recipes** — preparation time ≤ 30 minutes |
+| **Group Y** | **Not‑quick recipes** — preparation time > 30 minutes |
+| **Evaluation metric** | **Accuracy** on the held‑out test set |
+| **Null hypothesis (H₀)** | The classifier’s accuracy is the **same** for quick and not‑quick recipes. |
+| **Alternative hypothesis (H₁)** | The classifier’s accuracy **differs** between the two groups. |
+| **Test statistic** | \(\Delta = \text{Accuracy(quick)} - \text{Accuracy(not‑quick)}\) |
+| **Significance level** | \(\alpha = 0.05\) |
+| **Observed test statistic** | \(\hat\Delta = +0.0486\) (≈ 4.9 pp higher accuracy on quick recipes) |
+| **Permutation procedure** | 1 000 label‑shuffles of the group indicator; each shuffle recomputes difference. |
+| **p‑value** | \(p \approx 0.000\) (none of the 1 000 absolute permuted gaps ≥ 4.86 %) |
+| **Conclusion** | Because \(p < 0.05\), we reject H_0. |
