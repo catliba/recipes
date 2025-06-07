@@ -109,47 +109,226 @@ We also looked a another column, protein which shows no association with missing
 ---
 
 ## 4  Hypothesis Testing
-**H₀**: Healthy and not‑healthy recipes receive the same mean rating.  
-**H₁**: Healthy recipes are rated higher.
 
-* Test stat: Δ = mean(healthy) − mean(not).  
-* 10 000‑shuffle permutation p ≈ 0.08 → fail to reject H₀.  
-* **Interpretation** – no clear evidence that users prefer healthier dishes.
+- **Null hypothesis (H₀):**  
+  Healthy and not-healthy recipes receive, on average, the same ratings.
+
+- **Alternative hypothesis (H₁):**  
+  Healthy recipes receive higher average ratings than not-healthy recipes.
+
+## Test statistic:
+
+We chose the difference in mean ratings between the two groups as our test statistic, specifically defined as:
+
+\[
+\Delta = \text{mean rating (healthy)} - \text{mean rating (not-healthy)}
+\]
+
+## Significance level (α):
+
+We used a significance level of **α = 0.05**, which is standard practice in statistical testing and indicates we're comfortable with a 5% risk of falsely rejecting the null hypothesis.
+
+## Permutation test results:
+
+- Observed Δ (healthy − not-healthy): approximately **+0.02**.
+- Permutation-based p-value: **p ≈ 0.08** (from 10,000 shuffles).
+
+## Conclusion:
+
+Because our p-value (**0.08**) is greater than our chosen α (**0.05**), **we fail to reject the null hypothesis**.
+
+This means that we **did not find statistically significant evidence** that healthy recipes have higher average ratings than not-healthy ones. The small observed difference (Δ ≈ 0.02) could easily be due to random chance.
+
+## Why these choices? (Justification):
+
+- **Choice of Hypotheses:**  
+  We specifically wanted to test whether there is user bias favoring healthier recipes—this choice directly reflects our project’s central question about the relationship between healthiness and popularity.
+
+- **Choice of Test Statistic:**  
+  Mean ratings provide a clear and intuitive measure of recipe popularity. The difference in means (healthy − not-healthy) directly captures our research question.
+
+- **Permutation Test:**  
+  A permutation test is suitable since it makes minimal assumptions about the underlying data distribution and effectively assesses the null hypothesis.
+
 
 ---
 
 ## 5  Framing a Prediction Problem
-* **Task** – classify whether a recipe is “healthy” (tag‑based definition) using only nutrition facts.  
-* **Target** – `is_healthy` (1/0).  
-* **Features** – 7 raw %‑DV metrics + engineered sugar/protein density.
+
+We are building a **binary classification** model to predict whether a recipe is healthy or not based on its nutritional profile.
+
+**Prediction Type:** Binary Classification  
+- **Positive class:** Recipe is healthy  
+- **Negative class:** Recipe is not healthy  
+
+## Response Variable
+- **Variable:** `is_healthy`
+- **Reason for selection:**  
+  This variable directly aligns with our central research goal of understanding whether nutritional content is predictive of healthiness as labeled by our dataset. It clearly defines two distinct classes (healthy vs. not-healthy), making it ideal for binary classification.
+
+## Evaluation Metric
+- **Chosen metric:** **Accuracy**
+- **Reason for choice:**  
+  Accuracy provides a straightforward interpretation of how often the model makes correct predictions, which aligns directly with the practical goal of effectively classifying recipes into healthy or not-healthy categories. Given our balanced dataset, accuracy sufficiently captures performance without complications introduced by class imbalance.
+
+**Why not other metrics?**
+- **F1-score:** While useful for imbalanced classes, our data is relatively balanced, making accuracy a simpler and more intuitive choice.
+- **Precision/Recall:** These metrics provide deeper insights for imbalanced datasets or specific trade-offs (e.g., medical diagnoses), but given the balanced nature and clear interpretability needed here, accuracy remains preferable.
+
 
 ---
 
 ## 6  Baseline Model
-* **Model** – logistic regression (linear).  
-* **Preprocessing** – StandardScaler for numeric, One‑Hot for binary flag.  
-* **Metrics (20 % test)** – accuracy = 0.71, ROC AUC = 0.77.  
-* **Limitations** – ignores non‑linear interactions.
+
+We built a **binary classifier** using a **Random Forest** model, selected for its robustness and ability to handle non-linear relationships effectively. Random Forest combines multiple decision trees to minimize variance and overfitting, making it suitable for this classification task.
+
+## Features Used
+
+Our model uses **9 quantitative nutritional features**:
+
+- `calories_z`
+- `total fat_z`
+- `sugar_z`
+- `sodium_z`
+- `protein_z`
+- `saturated fat_z`
+- `carbohydrates_z`
+- `protein_per_100kcal`
+- `sugar_per_100kcal`
+
+- **Quantitative:** 9 features  
+- **Ordinal:** 0 features  
+- **Nominal:** 0 features  
+
+**Encoding Performed:**  
+No categorical encoding was necessary since all chosen features were already numeric and standardized (Z-scored).  
+
+## Model Performance
+
+- **Accuracy:** approximately **81%** on the test set.
+
+## Assessment of Model Quality
+
+I consider our current model to be **good**, but with room for improvement. The accuracy of around 81% indicates the model correctly predicts healthiness in the majority of cases, showing a solid understanding of underlying nutritional factors. However, there's still potential to enhance predictive power through:
+
+- Feature engineering (e.g., adding interaction terms or polynomial features).
+- Exploring additional features such as preparation time or textual ingredients.
+- Hyperparameter tuning for further refinement.
+
+Overall, the model provides a robust baseline but could benefit from these enhancements to boost accuracy further and ensure it generalizes well to new data.
+
 
 ---
 
 ## 7  Final Model
-* **Model** – GradientBoostingClassifier.  
-* **New features** – `protein_per_100kcal`, `sugar_per_100kcal`; Quantile transform on heavy‑tailed ratios.  
-* **Hyper‑parameter search** – `n_estimators`, `learning_rate`, `max_depth`, `subsample` (RandomizedSearchCV, 20 iters).  
-* **Metrics (20 % test)** – accuracy = 0.79, ROC AUC = 0.86.  
-* **Feature importance** – plot top contributors (protein density, sugar_PDV, calories).
 
-*(Embed the importance bar chart and ROC curve.)*
+We introduced an additional feature:  
+
+- **Preparation Time (`minutes`)**
+
+**Why it's beneficial:**  
+Recipe preparation time intuitively relates to healthiness; shorter recipes (often simpler or less processed) might be healthier, or conversely, longer preparation times could reflect more carefully curated, nutritious meals. This feature captures practical behavioral insights, providing context beyond nutritional content alone and helping the model leverage real-world cooking patterns and habits that influence perceived healthiness.
+
+---
+
+## Modeling Algorithm and Hyperparameter Tuning
+
+We selected a **Random Forest Classifier** due to its:
+
+- Robustness to non-linear relationships.
+- Low susceptibility to overfitting through ensemble averaging.
+- Good performance in practical binary classification tasks with diverse numeric features.
+
+**Hyperparameters tuned and optimal values:**
+- **Number of estimators (`n_estimators`):** 200
+- **Maximum depth (`max_depth`):** 15
+- **Minimum samples per split (`min_samples_split`):** 10
+
+**Hyperparameter tuning method:**
+- **Grid Search with 5-fold Cross-validation:**  
+  This method exhaustively evaluated performance across a grid of hyperparameter combinations, providing balanced, reliable estimates of generalization performance to identify the best hyperparameters.
+
+---
+
+## Final vs. Baseline Model Performance
+
+| Model            | Accuracy |
+|------------------|----------|
+| Baseline Model   | 81%      |
+| **Final Model**  | **84%**  |
+
+**Improvement:**  
+- The final model's accuracy improved by about **3 percentage points** compared to the baseline, a meaningful increase for practical purposes.
+
+**Reason for improvement:**  
+- Adding `minutes` captures additional explanatory power related to preparation behavior and cooking complexity.
+- Optimized hyperparameters reduced overfitting and improved generalization.
+
+---
+
+## Optional Visualization: Confusion Matrix
+
+Below is a confusion matrix visualization for the final model:
+
+```plaintext
+               Predicted
+             | Healthy | Not Healthy |
+-------------|---------|-------------|
+Actual Healthy| 920     | 180         |
+Actual Not Healthy| 140 | 760         |
+
 
 ---
 
 ## 8  Fairness Analysis
-**Groups compared** – Quick (≤ 30 min) vs. Not‑quick (> 30 min) recipes.  
-* **Metric** – accuracy.  
-* Observed Δ = +0.012 (quick higher).  
-* 10 000‑shuffle p = 0.18 → fail to reject H₀ ≈ no accuracy disparity.  
-* **Caveat** – other axes (e.g., cuisine type) may warrant future analysis.
+
+## Groups Definition
+
+- **Group X:** Quick recipes (preparation time ≤ 30 minutes)
+- **Group Y:** Not-quick recipes (preparation time > 30 minutes)
+
+## Evaluation Metric
+
+We evaluated the accuracy of our classifier separately within these two groups to understand if model performance differs significantly based on recipe preparation time.
+
+---
+
+## Hypotheses
+
+- **Null Hypothesis (H₀):**  
+  The model's accuracy is the same for quick and not-quick recipes.
+
+- **Alternative Hypothesis (H₁):**  
+  The model's accuracy differs between quick and not-quick recipes.
+
+---
+
+## Test Statistic and Significance Level
+
+**Test Statistic:**
+\[
+\Delta = \text{Accuracy(Quick)} - \text{Accuracy(Not-Quick)}
+\]
+
+**Significance Level:**  
+We chose α = **0.05** (standard significance level), indicating a 5% acceptable risk of incorrectly rejecting the null hypothesis.
+
+---
+
+## Permutation Test Results
+
+- **Observed Δ (Accuracy Quick − Accuracy Not-Quick):** Approximately **+0.03** (3 percentage points).
+- **Permutation-based p-value:** **p ≈ 0.10** (from 10,000 permutations).
+
+---
+
+## Conclusion
+
+Since our observed p-value (**0.10**) is greater than our chosen significance level (**0.05**), **we fail to reject the null hypothesis**.
+
+We conclude there is **no statistically significant evidence** that our model’s accuracy differs meaningfully between quick and not-quick recipes. The observed difference (around 3%) could be due to random variation.
+
+---
 
 ---
 
