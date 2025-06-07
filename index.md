@@ -1,25 +1,40 @@
-# Healthy‑Recipes Project
+# Recipes Project
 
-A short tagline (one sentence).
+Who doesn't want to eat healthy and to eat good?
 
 ---
 
 ## 1  Introduction
-* **Motivation** – Why predict whether a recipe is “healthy”?  
-* **Dataset** – Food.com recipes + interactions (2008 – 2018, ≈ 230 k recipes).  
-* **Key takeaway** – \<one‑line headline of your findings\>.
+
+Who doesn't love food? Who doesn't love living longer? This project aims to solve both problems. Say goodbye to highly processed non nutritional artificial foods and say hello to a lifelong skill you are better off with than without - that is cooking. Not just cooking anything however. Cooking only the best, by general consesus and of course, the healthiest. Our goal is to predict whether a recipe is “healthy” using only its nutrition facts—and what patterns link nutritional content with popularity (user ratings)? Our dataset is from Food.com and here is a bit more information about the data we are working with:
+| Column           | Description                                                                                                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`           | Recipe name                                                                                                                                                                                              |
+| `id`             | Recipe ID                                                                                                                                                                                                |
+| `minutes`        | Minutes to prepare recipe                                                                                                                                                                                |
+| `contributor_id` | User ID who submitted this recipe                                                                                                                                                                        |
+| `submitted`      | Date recipe was submitted                                                                                                                                                                                |
+| `tags`           | Food.com tags for recipe                                                                                                                                                                                 |
+| `nutrition`      | Nutrition information in the form `[calories (#), total fat (PDV), sugar (PDV), sodium (PDV), protein (PDV), saturated fat (PDV), carbohydrates (PDV)]`; **PDV** stands for “percentage of daily value.” |
+| `n_steps`        | Number of steps in recipe                                                                                                                                                                                |
+| `steps`          | Text for recipe steps, in order                                                                                                                                                                          |
+| `description`    | User‑provided description                                                                                                                                                                                |
+
+There are 83782 unique recipes! We will be using primarily the following columns: `tags`, `nutrition`, `minutes`, and `submitted`.  In addition, we are using another dataset that contains user ratings for the recipes. 
 
 ---
 
 ## 2  Data Cleaning & Exploratory Data Analysis
-* **Parsing “nutrition”**: converted 7‑item strings → numeric cols.  
-* **Merged ratings**: `avg_rating` from interactions.  
-* **EDA highlights**  
-  * Histogram of calories (Fig 1) – right‑skewed, median ≈ 410 kcal.  
-  * Histogram of avg ratings (Fig 2) – compressed between 4.2 – 4.8.  
-* **Interpretation** – explain what shapes suggest about bias / next steps.
 
-*(Insert two interactive Plotly histograms here.)*
+After combining the average user rating for the recipes onto our main dataframe, we next parse the nutritional value and create more specified columns from it. Specficially, we have `[calories', 'total fat', 'sugar', 'sodium', 'protein', 'saturated fat', 'carbohydrates']` as our extra columns which we will be utilizing later on in our predictions. Next, I needed to determine which recipes are considered 'healthy.' The `tags` column helps categorize each recipe. Looking and parsing through each of the unique tags in the tags column, I've selected the following to be considered as a healthy recipe: `healthy_tags = ["vegan", "vegetarian", "gluten-free", "healthy", "healthy-2", "high-calcium", "high-fiber", 'high-in-something-diabetic-friendly', 'high-protein']`. Any recipe that contains one of these tags automatically get marked as healthy.I realize that this may not encapsulate all of the healthy recipes, but it is a good start to label our data. Next, we standardize the nutritional values, calculate the age of the recipe. After doing all that, I end with the follow dataframe:
+
+<iframe
+  src="imgs/Screenshot 2025-06-06 214441.png"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
 
 ---
 
