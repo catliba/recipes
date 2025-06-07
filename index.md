@@ -170,18 +170,6 @@ We are using ROC AUC because ROC "measures the ability of the model to rank pred
 
 ## 8  Fairness Analysis
 
-## Groups Definition
-
-- **Group X:** Quick recipes (preparation time ≤ 30 minutes)
-- **Group Y:** Not-quick recipes (preparation time > 30 minutes)
-
-## Evaluation Metric
-
-We evaluated the accuracy of our classifier separately within these two groups to understand if model performance differs significantly based on recipe preparation time.
-
----
-
-## Hypotheses
 | Item | Specification |
 |------|---------------|
 | **Group X** | **Quick recipes** — preparation time ≤ 30 minutes |
